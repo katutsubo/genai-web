@@ -1,3 +1,5 @@
+// ↓ 必ず最初に import する (Amplify の初期化より前)
+import './cognito-local-shim';
 import { App } from './App.tsx';
 import './index.css';
 import { Authenticator } from '@aws-amplify/ui-react';

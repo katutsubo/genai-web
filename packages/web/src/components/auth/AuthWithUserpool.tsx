@@ -19,18 +19,30 @@ const AuthWithUserpoolContent = (props: Props) => {
   const prevRoute = useRef<string | undefined>(undefined);
 
   const savedPasswordRef = useRef<string | undefined>(undefined);
+  // ローカル開発 (cognito-local) は SRP 非対応なので USER_PASSWORD_AUTH を使う
+  const isLocalCognito = !!import.meta.env.VITE_APP_COGNITO_ENDPOINT;
+  const localAuthFlow = isLocalCognito
+    ? ({ authFlowType: 'USER_PASSWORD_AUTH' as const })
+    : undefined;
+
   const services = {
     handleSignIn: (input: SignInInput) => {
       if (input.password) {
         savedPasswordRef.current = input.password;
       }
 
+      // ローカルなら必ず USER_PASSWORD_AUTH を付与
+      const withFlow = (i: SignInInput): SignInInput =>
+        localAuthFlow
+          ? { ...i, options: { ...(i.options ?? {}), ...localAuthFlow } }
+          : i;
+
       if (!input.password && savedPasswordRef.current) {
         const { options: _options, ...rest } = input;
-        return signIn({ ...rest, password: savedPasswordRef.current });
+        return signIn(withFlow({ ...rest, password: savedPasswordRef.current }));
       }
 
-      return signIn(input);
+      return signIn(withFlow(input));
     },
   };
 
@@ -184,6 +196,7 @@ export const AuthWithUserpool = (props: Props) => {
       },
     },
   });
+
 
   I18n.putVocabularies(translations);
   I18n.setLanguage('ja');
