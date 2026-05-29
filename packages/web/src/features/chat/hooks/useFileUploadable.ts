@@ -9,15 +9,13 @@ export const useFileUploadable = () => {
   const { pathname } = useLocation();
 
   const { getModelId } = useChat(pathname, chatId);
-
   const modelId = getModelId();
 
   const accept = useMemo(() => {
-    if (!modelId) {
-      return [];
-    }
-
-    const feature = MODELS.modelMetadata[modelId].flags;
+    if (!modelId) return [];
+    const meta = MODELS.modelMetadata[modelId];
+    if (!meta || !meta.flags) return [];
+    const feature = meta.flags;
     return [
       ...(feature.doc ? FILE_LIMIT.accept.doc : []),
       ...(feature.image ? FILE_LIMIT.accept.image : []),
@@ -25,10 +23,5 @@ export const useFileUploadable = () => {
     ];
   }, [modelId]);
 
-  const fileUploadable = accept.length > 0;
-
-  return {
-    accept,
-    fileUploadable,
-  };
+  return { accept, fileUploadable: accept.length > 0 };
 };
