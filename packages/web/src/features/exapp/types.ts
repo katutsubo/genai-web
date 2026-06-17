@@ -13,12 +13,21 @@ export type GovAIListItem = {
   value: string;
 };
 
+// 他フィールドの値に応じて、このフィールドを表示/非表示にするための条件。
+// 未指定の場合は常に表示される（既存の挙動と互換）。
+export type GovAIFieldVisibility = {
+  field: string; // 表示制御の基準となる他フィールドのキー（例: "register"）
+  equals?: string; // 基準フィールドの値がこれと一致したら表示
+  in?: string[]; // 基準フィールドの値がこの配列に含まれていたら表示
+};
+
 export type GovAIFormUI = {
   type: GovAIFormUIType; // UIタイプ
   title: string; // タイトルラベル
   desc?: string; // サポートテキスト
   required?: boolean; // 必須かどうか（未指定の場合は任意になる）
   default_value?: string; // デフォルト値
+  visible_when?: GovAIFieldVisibility; // 表示条件（未指定なら常に表示）
 };
 
 export type GovAIFormUIText = {

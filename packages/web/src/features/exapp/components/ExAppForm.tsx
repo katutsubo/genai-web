@@ -1,5 +1,5 @@
 import { ExApp, InvokeExAppHistory } from 'genai-web';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
@@ -11,6 +11,7 @@ import { useExAppInvokeState } from '../hooks/useExAppInvokeState';
 import { getExAppHistoriesKey } from '../hooks/useFetchInvokedExAppHistories';
 import { ConversationHistory, GovAIFormDefaultValue, GovAIFormUIJson } from '../types';
 import { buildPayload } from '../utils/buildPayload';
+import { collectControllingFields } from '../utils/fieldVisibility';
 import { formatConversationHistory } from '../utils/formatConversationHistory';
 import { formatFileInfo } from '../utils/formatFileInfo';
 import { processFormFiles } from '../utils/processFormFiles';
@@ -54,11 +55,24 @@ export const ExAppForm = (props: Props) => {
     setValue,
     trigger,
     clearErrors,
+    watch,
     formState: { errors, submitCount },
   } = useForm({
     mode: 'onSubmit',
     values: formValues,
   });
+
+  // visible_when で参照される「基準フィールド」の値を監視し、
+  // 操作選択に応じて不要な項目を非表示にする。
+  const controllingFields = useMemo(() => collectControllingFields(uiJson), [uiJson]);
+  const watchedControls = watch(controllingFields);
+  const visibilityContext = useMemo(() => {
+    const context: Record<string, unknown> = {};
+    controllingFields.forEach((name, index) => {
+      context[name] = watchedControls[index];
+    });
+    return context;
+  }, [controllingFields, watchedControls]);
 
   const [invokeHistory, setInvokeHistory] = useState<InvokeExAppHistory | null>(null);
   const [conversationHistory, setConversationHistory] = useState('');
@@ -164,6 +178,7 @@ ${parsedHistory.outputs}
           clearErrors={clearErrors}
           errors={errors}
           submitCount={submitCount}
+          visibilityContext={visibilityContext}
         />
 
         {exApp.systemPrompt && (

@@ -312,4 +312,78 @@ describe('ExAppFormComponentBuilder', () => {
     expect(input).toBeDefined();
     expect(input.tagName).toEqual('P');
   });
+
+  describe('visible_when', () => {
+    const json = `{
+        "register": {
+            "type": "radio",
+            "title": "操作",
+            "default_value": "preview",
+            "items": [
+                { "title": "プレビュー", "value": "preview" },
+                { "title": "削除", "value": "delete" }
+            ]
+        },
+        "file": {
+            "type": "text",
+            "title": "ファイル名",
+            "visible_when": { "field": "register", "in": ["preview"] }
+        },
+        "doc_id": {
+            "type": "text",
+            "title": "削除対象ID",
+            "visible_when": { "field": "register", "in": ["delete"] }
+        }
+    }`;
+
+    it('shows only fields matching the current controlling value', () => {
+      const uiJSON = JSON.parse(json);
+      const { result } = renderHook(() => useForm({ mode: 'onSubmit' }));
+
+      const { queryByRole } = render(
+        <ExAppFormComponentBuilder
+          uiJson={uiJSON}
+          register={result.current.register}
+          errors={result.current.formState.errors}
+          visibilityContext={{ register: 'preview' }}
+        />,
+      );
+
+      expect(queryByRole('textbox', { name: /ファイル名/ })).not.toBeNull();
+      expect(queryByRole('textbox', { name: /削除対象ID/ })).toBeNull();
+    });
+
+    it('switches visible fields when the controlling value changes', () => {
+      const uiJSON = JSON.parse(json);
+      const { result } = renderHook(() => useForm({ mode: 'onSubmit' }));
+
+      const { queryByRole } = render(
+        <ExAppFormComponentBuilder
+          uiJson={uiJSON}
+          register={result.current.register}
+          errors={result.current.formState.errors}
+          visibilityContext={{ register: 'delete' }}
+        />,
+      );
+
+      expect(queryByRole('textbox', { name: /ファイル名/ })).toBeNull();
+      expect(queryByRole('textbox', { name: /削除対象ID/ })).not.toBeNull();
+    });
+
+    it('shows all fields when no visibilityContext is provided', () => {
+      const uiJSON = JSON.parse(json);
+      const { result } = renderHook(() => useForm({ mode: 'onSubmit' }));
+
+      const { queryByRole } = render(
+        <ExAppFormComponentBuilder
+          uiJson={uiJSON}
+          register={result.current.register}
+          errors={result.current.formState.errors}
+        />,
+      );
+
+      expect(queryByRole('textbox', { name: /ファイル名/ })).not.toBeNull();
+      expect(queryByRole('textbox', { name: /削除対象ID/ })).not.toBeNull();
+    });
+  });
 });

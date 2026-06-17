@@ -7,6 +7,7 @@ import {
   UseFormTrigger,
 } from 'react-hook-form';
 import { GovAIFormUIJson } from '../types';
+import { isFieldVisible } from '../utils/fieldVisibility';
 import { formatValidationErrorMessage } from '../utils/formatValidationErrorMessage';
 import {
   isCheckboxType,
@@ -39,10 +40,21 @@ type Props = {
   errors: FieldErrors<FieldValues>;
   /** バリデーションエラー時のフォーカス制御用（ExAppInputFileのみ使用） */
   submitCount?: number;
+  /** visible_when 条件の評価に使う、他フィールドの現在値（未指定なら全フィールド表示） */
+  visibilityContext?: Record<string, unknown>;
 };
 
 export const ExAppFormComponentBuilder = (props: Props) => {
-  const { uiJson, register, setValue, trigger, clearErrors, errors, submitCount } = props;
+  const {
+    uiJson,
+    register,
+    setValue,
+    trigger,
+    clearErrors,
+    errors,
+    submitCount,
+    visibilityContext,
+  } = props;
 
   return (
     <>
@@ -53,6 +65,11 @@ export const ExAppFormComponentBuilder = (props: Props) => {
         }
 
         const uiConfig = uiJson[key];
+
+        // visible_when 条件を満たさないフィールドは描画しない
+        if (visibilityContext && !isFieldVisible(uiConfig, visibilityContext)) {
+          return null;
+        }
         if (isTextType(uiConfig)) {
           return (
             <ExAppTextInput
