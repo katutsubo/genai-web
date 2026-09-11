@@ -179,6 +179,7 @@ ${parsedHistory.outputs}
           errors={errors}
           submitCount={submitCount}
           visibilityContext={visibilityContext}
+          watch={watch}
         />
 
         {exApp.systemPrompt && (

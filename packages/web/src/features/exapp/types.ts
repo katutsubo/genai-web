@@ -13,6 +13,11 @@ export type GovAIListItem = {
   value: string;
 };
 
+export type GovAIListGroup = {
+  title: string;
+  items: GovAIListItem[];
+};
+
 // 他フィールドの値に応じて、このフィールドを表示/非表示にするための条件。
 // 未指定の場合は常に表示される（既存の挙動と互換）。
 export type GovAIFieldVisibility = {
@@ -58,6 +63,7 @@ export type GovAIFormUISelect = {
 
 export type GovAIFormUICheckbox = {
   items?: GovAIListItem[]; // 選択肢のリスト
+  groups?: GovAIListGroup[]; // 親子構造の選択肢
 } & GovAIFormUI;
 
 export type GovAIFormUIRadio = {

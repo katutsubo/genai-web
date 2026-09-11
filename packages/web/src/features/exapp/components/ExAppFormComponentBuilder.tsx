@@ -5,6 +5,7 @@ import {
   UseFormRegister,
   UseFormSetValue,
   UseFormTrigger,
+  UseFormWatch,
 } from 'react-hook-form';
 import { GovAIFormUIJson } from '../types';
 import { isFieldVisible } from '../utils/fieldVisibility';
@@ -42,6 +43,8 @@ type Props = {
   submitCount?: number;
   /** visible_when 条件の評価に使う、他フィールドの現在値（未指定なら全フィールド表示） */
   visibilityContext?: Record<string, unknown>;
+  /** 親子チェックボックスの選択状態を追跡するために使用 */
+  watch?: UseFormWatch<FieldValues>;
 };
 
 export const ExAppFormComponentBuilder = (props: Props) => {
@@ -54,6 +57,7 @@ export const ExAppFormComponentBuilder = (props: Props) => {
     errors,
     submitCount,
     visibilityContext,
+    watch,
   } = props;
 
   return (
@@ -139,6 +143,8 @@ export const ExAppFormComponentBuilder = (props: Props) => {
               errors={errors[key] ? formatValidationErrorMessage(key, uiConfig, errors) : ''}
               uiConfig={uiConfig}
               register={register}
+              setValue={setValue}
+              watch={watch}
             />
           );
         } else if (isRadioType(uiConfig)) {

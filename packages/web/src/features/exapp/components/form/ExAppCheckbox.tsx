@@ -1,4 +1,4 @@
-import { FieldValues, UseFormRegister } from 'react-hook-form';
+import { FieldValues, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Checkbox } from '@/components/ui/dads/Checkbox';
 import { ErrorText } from '@/components/ui/dads/ErrorText';
 import { Legend } from '@/components/ui/dads/Legend';
@@ -12,10 +12,33 @@ type Props = {
   errors?: string;
   uiConfig: GovAIFormUICheckbox;
   register: UseFormRegister<FieldValues>;
+  setValue?: UseFormSetValue<FieldValues>;
+  watch?: UseFormWatch<FieldValues>;
 };
 
 export const ExAppCheckbox = (props: Props) => {
-  const { id, classNames, errors, uiConfig, register } = props;
+  const { id, classNames, errors, uiConfig, register, setValue, watch } = props;
+  const fieldValue = watch?.(id);
+  const selectedValues = Array.isArray(fieldValue)
+    ? fieldValue.map(String)
+    : fieldValue === undefined || fieldValue === ''
+      ? []
+      : [String(fieldValue)];
+
+  const checkboxProps = {
+    isError: !!errors,
+    'aria-describedby':
+      [uiConfig.desc && `${id}-support-text`, errors && `${id}-error-text`]
+        .filter(Boolean)
+        .join(' ') || undefined,
+    ...register(id, { required: uiConfig.required ?? false }),
+  };
+
+  const renderChild = (item: { title: string; value: string }) => (
+    <Checkbox key={`${id}-${item.value}`} value={item.value} {...checkboxProps}>
+      {item.title}
+    </Checkbox>
+  );
 
   return (
     <fieldset className={`${classNames ?? ''}`}>
@@ -28,25 +51,31 @@ export const ExAppCheckbox = (props: Props) => {
         </SupportText>
       )}
       <div className='flex flex-col'>
-        {uiConfig.items?.map((i) => {
+        {uiConfig.groups?.map((group) => {
+          const childValues = group.items.map((item) => item.value);
+          const allSelected = childValues.length > 0 && childValues.every((value) => selectedValues.includes(value));
           return (
-            <Checkbox
-              key={`${id}-${i.value}`}
-              isError={errors ? true : false}
-              value={i.value}
-              aria-describedby={
-                [uiConfig.desc && `${id}-support-text`, errors && `${id}-error-text`]
-                  .filter(Boolean)
-                  .join(' ') || undefined
-              }
-              {...register(id, {
-                required: uiConfig.required ?? false,
-              })}
-            >
-              {i.title}
-            </Checkbox>
+            <div key={`${id}-${group.title}`} className='mt-2 first:mt-0'>
+              <Checkbox
+                checked={allSelected}
+                isError={!!errors}
+                onChange={(event) => {
+                  if (!setValue) return;
+                  const nextValues = event.target.checked
+                    ? Array.from(new Set([...selectedValues, ...childValues]))
+                    : selectedValues.filter((value) => !childValues.includes(value));
+                  setValue(id, nextValues, { shouldDirty: true, shouldValidate: true });
+                }}
+              >
+                {group.title}
+              </Checkbox>
+              <div className='ml-7 flex flex-col border-l border-solid-gray-300 pl-3'>
+                {group.items.map(renderChild)}
+              </div>
+            </div>
           );
         })}
+        {uiConfig.items?.map(renderChild)}
       </div>
       {errors && (
         <ErrorText className='mt-2' id={`${id}-error-text`}>

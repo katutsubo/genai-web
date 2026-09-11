@@ -4,4 +4,6 @@ export type RecommendedGovAI = {
   description: string;
   teamId: string;
   exAppId: string;
+  // MCPサーバ/MCPエージェント系アプリかどうか（おすすめ一覧では下部の目立たない領域に表示する）
+  isMcp?: boolean;
 };

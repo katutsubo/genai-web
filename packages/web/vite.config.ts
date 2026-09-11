@@ -8,9 +8,9 @@ import { defineConfig } from 'vite';
 // Vite dev サーバーの same-origin プロキシ経由で floci(cognito-idp)へ中継する。
 // cognito-local-shim.ts が cognito-idp の URL を VITE_APP_COGNITO_ENDPOINT
 // (= "/_cognito-idp") に書き換える前提。
-// プロキシ先はコンテナ内から到達可能な service 名(http://localstack:4566)。
+// プロキシ先はコンテナ内から到達可能な service 名(http://floci:4566)。
 const cognitoProxyTarget =
-  process.env.COGNITO_PROXY_TARGET || 'http://localstack:4566';
+  process.env.COGNITO_PROXY_TARGET || 'http://floci:4566';
 
 // https://vitejs.dev/config/
 export default defineConfig({

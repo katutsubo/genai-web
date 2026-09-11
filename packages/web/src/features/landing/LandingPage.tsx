@@ -20,6 +20,9 @@ export const LandingPage = () => {
       return [];
     }
   })();
+  // MCPサーバ/MCPエージェント系アプリはおすすめ一覧から分離し、下部に目立たない形で表示する
+  const mainGovAI = recommendedGovAI.filter((govAI) => !govAI.isMcp);
+  const mcpGovAI = recommendedGovAI.filter((govAI) => govAI.isMcp);
 
   return (
     <LayoutBody>
@@ -30,8 +33,8 @@ export const LandingPage = () => {
         <div className='mt-8 lg:mt-10'>
           <h2 className='mb-6 flex justify-start text-std-24B-150'>おすすめアプリ</h2>
           <ul className='grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-4'>
-            {recommendedGovAI && recommendedGovAI.length > 0 ? (
-              recommendedGovAI.map((govAI) => (
+            {mainGovAI.length > 0 ? (
+              mainGovAI.map((govAI) => (
                 <li key={govAI.exAppId}>
                   <Card
                     title={govAI.title}
@@ -75,6 +78,25 @@ export const LandingPage = () => {
             )}
           </ul>
         </div>
+        {mcpGovAI.length > 0 && (
+          <div className='mt-10 border-t border-solid-gray-300 pt-6'>
+            <h2 className='mb-4 flex justify-start text-std-16B-150 text-solid-gray-600'>
+              MCPサーバ（開発・検証向け）
+            </h2>
+            <ul className='grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6'>
+              {mcpGovAI.map((govAI) => (
+                <li key={govAI.exAppId}>
+                  <Card
+                    title={govAI.title}
+                    className='h-full p-3 text-solid-gray-600 opacity-80 hover:opacity-100 [&_h3]:text-std-14B-160 [&_p]:text-std-14N-170 [&_p]:mt-1 [&_p]:mb-0'
+                    to={`/apps/${govAI.teamId}/${govAI.exAppId}`}
+                    description={govAI.description}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className='mt-8 flex justify-center'>
           <Button className='inline-flex items-center px-8!' variant='solid-fill' size='lg' asChild>
             <Link to='/apps'>すべてのAIアプリを見る</Link>

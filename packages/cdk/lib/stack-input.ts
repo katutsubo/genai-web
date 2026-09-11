@@ -48,6 +48,7 @@ export const govaiForHomepage = z.object({
   teamId: z.literal('00000000-0000-0000-0000-000000000000'), // 共通チームIDのみ許可する。拡張時はここをstrng()に変更する。
   exAppId: z.string(),
   description: z.string(),
+  isMcp: z.boolean().default(false),
 });
 
 // Common Validator
